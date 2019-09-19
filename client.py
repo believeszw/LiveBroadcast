@@ -5,7 +5,7 @@
 # Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
-
+import time
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pymysql
@@ -26,6 +26,23 @@ class UiDialog(object):
     sent_time_2 = 0
     web_site = ""
 
+    with open('conf/default.conf', 'r') as confFile:
+        confStr = confFile.read()
+    conf = json.JSONDecoder().decode(confStr)
+    # connect table result
+    dbStaticResult = conf['database']['test']
+
+    # 打开数据库连接
+    connection = pymysql.connect(host=dbStaticResult['host'],
+                                 port=3306,
+                                 user=dbStaticResult['user'],
+                                 password=dbStaticResult['password'],
+                                 db=dbStaticResult['database'],
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    # 获取游标
+    cursor = connection.cursor()
+
     def __init__(self):
         self.ReadCfg()
 
@@ -34,20 +51,10 @@ class UiDialog(object):
         self.cursor.close()
         self.connection.close()
 
-    # 打开数据库连接
-    connection = pymysql.connect(host='rm-wz98gyxmfw9cqi424eo.mysql.rds.aliyuncs.com',
-                                 port=3306,
-                                 user='believe',
-                                 password='szw123456!',
-                                 db='test',
-                                 charset='utf8',
-                                 cursorclass=pymysql.cursors.DictCursor)
-    # 获取游标
-    cursor = connection.cursor()
-
     # 刷新界面
     def Refresh(self):
         index = self.comboBox.currentIndex()
+
         # 使用execute()方法执行SQL语句
         self.cursor.execute("select *from test where server=" + str(index + 9))
 
@@ -56,6 +63,7 @@ class UiDialog(object):
         ret_json = json.dumps(data)
         print(ret_json)
         json_array = json.loads(ret_json)
+
         self.table.clearContents()
         count = 0
         for it in json_array:
@@ -80,8 +88,45 @@ class UiDialog(object):
 
         options = webdriver.ChromeOptions()
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        dr = webdriver.Chrome(executable_path='C:\Program Files (x86)\Google\Chrome\Application\chromedriver.exe',
-                              options=options)
+        dr = webdriver.Chrome(options=options)
+        try:
+            # print(web_site)
+            dr.get("https://egame.qq.com")
+            print("gaga")
+            # print("gaga")
+            # dr.maximize_window()
+            dr.implicitly_wait(15)
+            print(dr.title)
+            dr.get(self.web_site)
+            dr.implicitly_wait(15)
+            time.sleep(5)
+            # 点击QQ登录
+            dr.find_element_by_link_text("登录").click()
+            time.sleep(5)
+            # 切换到iframe
+            dr.switch_to.frame("_egame_login_frame_qq_")
+            dr.switch_to.frame("ptlogin_iframe")
+            # 点击本地qq号登陆
+            dr.find_element_by_xpath("//*[@id='qlogin_list']/a[1]").click()
+            # dr.find_element_by_xpath("//*[@id='qlogin_list']/a[3]").click()
+            print("登录成功")
+            # 刷新指定次数
+            interval_time = random.randint(self.interval_1, self.interval_2)
+            count = self.send_time
+            while (count > 0):
+                print('The count is:', count)
+                count = count - 1
+                time.sleep(interval_time)
+                dr.refresh()  # 刷新方法 refresh
+                print("刷新成功")
+            print("关闭显示器")
+            dr.quit()
+        except Exception as e:
+            print(e)
+        # 切换 qq 号
+        qq_interval_time = random.randint(self.interval_3, self.interval_4)
+        print(qq_interval_time)
+        time.sleep(qq_interval_time)
 
     # 选择切换
     def Select(self, index):
@@ -110,6 +155,10 @@ class UiDialog(object):
         self.sent_time_1 = conf.getint("Option", "sent_time_1")
         self.sent_time_2 = conf.getint("Option", "sent_time_2")
         self.web_site = conf.get("Option", "web_site")
+        self.host = conf.get("Option", 'host')
+        self.user = conf.get("Option", 'user')
+        self.password = conf.get("Option", 'password')
+        self.db = conf.get("Option", 'db')
 
         print("value for Option's interval_1:", self.interval_1)  # value for Option's a_key1: 20
         print("value for Option's interval_2:", self.interval_2)  # value for Option's a_key2: 10
