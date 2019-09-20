@@ -18,19 +18,21 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 
 class UiDialog(object):
-    interval_1 = 0
-    interval_2 = 0
-    interval_3 = 0
-    interval_4 = 0
-    sent_time_1 = 0
-    sent_time_2 = 0
-    web_site = ""
-
+    test_interval_1 = 0
+    test_interval_2 = 0
+    test_interval_3 = 0
+    test_interval_4 = 0
+    test_sent_time_1 = 0
+    test_sent_time_2 = 0
+    test_web_site = ""
+    qq_index = 0
+    conf = configparser.ConfigParser()
+    # 读取 json 配置文件
     with open('conf/default.conf', 'r') as confFile:
         confStr = confFile.read()
-    conf = json.JSONDecoder().decode(confStr)
+    conf_json = json.JSONDecoder().decode(confStr)
     # connect table result
-    dbStaticResult = conf['database']['test']
+    dbStaticResult = conf_json['database']['test']
 
     # 打开数据库连接
     connection = pymysql.connect(host=dbStaticResult['host'],
@@ -43,8 +45,13 @@ class UiDialog(object):
     # 获取游标
     cursor = connection.cursor()
 
+    options = webdriver.ChromeOptions()
+    options.add_argument('--log-level=3')
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+
     def __init__(self):
         self.ReadCfg()
+        self.send_time = random.randint(self.test_sent_time_1, self.test_sent_time_2)
 
     def __del__(self):
         # 关闭游标和数据库的连接
@@ -56,7 +63,7 @@ class UiDialog(object):
         index = self.comboBox.currentIndex()
 
         # 使用execute()方法执行SQL语句
-        self.cursor.execute("select *from test where server=" + str(index + 9))
+        self.cursor.execute("select *from test where server=" + str(index))
 
         # 获取单条数据
         data = self.cursor.fetchall()
@@ -67,7 +74,7 @@ class UiDialog(object):
         self.table.clearContents()
         count = 0
         for it in json_array:
-            self.table.setRowCount(count+1)
+            self.table.setRowCount(count + 1)
             item = QTableWidgetItem()
             item.setText(str(it['id']))
             self.table.setItem(count, 0, item)
@@ -84,49 +91,94 @@ class UiDialog(object):
 
     # 开始
     def Start(self):
-        print("开始")
+        if self.btn_start.text() == "结束":
+            self.btn_start.setText("开始")
+            self.dr.quit()
+        else:
+            print("开始")
+            self.btn_start.setText("结束")
 
-        options = webdriver.ChromeOptions()
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        dr = webdriver.Chrome(options=options)
-        try:
-            # print(web_site)
-            dr.get("https://egame.qq.com")
-            print("gaga")
-            # print("gaga")
-            # dr.maximize_window()
-            dr.implicitly_wait(15)
-            print(dr.title)
-            dr.get(self.web_site)
-            dr.implicitly_wait(15)
-            time.sleep(5)
-            # 点击QQ登录
-            dr.find_element_by_link_text("登录").click()
-            time.sleep(5)
-            # 切换到iframe
-            dr.switch_to.frame("_egame_login_frame_qq_")
-            dr.switch_to.frame("ptlogin_iframe")
-            # 点击本地qq号登陆
-            dr.find_element_by_xpath("//*[@id='qlogin_list']/a[1]").click()
-            # dr.find_element_by_xpath("//*[@id='qlogin_list']/a[3]").click()
-            print("登录成功")
-            # 刷新指定次数
-            interval_time = random.randint(self.interval_1, self.interval_2)
-            count = self.send_time
-            while (count > 0):
-                print('The count is:', count)
-                count = count - 1
-                time.sleep(interval_time)
-                dr.refresh()  # 刷新方法 refresh
-                print("刷新成功")
-            print("关闭显示器")
-            dr.quit()
-        except Exception as e:
-            print(e)
-        # 切换 qq 号
-        qq_interval_time = random.randint(self.interval_3, self.interval_4)
-        print(qq_interval_time)
-        time.sleep(qq_interval_time)
+            try:
+                # print(web_site)
+                self.dr = webdriver.Chrome(options=self.options)
+                self.dr.get("https://egame.qq.com")
+                print("gaga")
+                # print("gaga")
+                # dr.maximize_window()
+                # self.dr.implicitly_wait(5)
+                print(self.dr.title)
+                self.dr.get(self.test_web_site)
+                self.dr.implicitly_wait(3)
+
+                # 点击QQ登录
+                self.dr.find_element_by_link_text("登录").click()
+                time.sleep(3)
+
+                # 切换到iframe
+                self.dr.switch_to.frame("_egame_login_frame_qq_")
+                self.dr.switch_to.frame("ptlogin_iframe")
+
+                # 点击本地qq号登陆
+                self.dr.execute_script('document.getElementById("qlogin").style="display: none;"')
+                self.dr.execute_script('document.getElementsByClassName("authLogin").style="display: none;"')
+                self.dr.execute_script('document.getElementById("web_qr_login").style="display: block;"')
+                # browser.evaluate_script('document.getElementById("batch_quto").contentEditable = true')
+                time.sleep(3)
+
+                if self.qq_index == 3:
+                    # self.dr.find_element_by_xpath("//*[@id='qlogin_list']/a[1]").click()
+                    # 隐藏初始界面
+                    elem_user = self.dr.find_element_by_name("u").send_keys("1576558587")
+                    time.sleep(1)
+                    elem_pwd = self.dr.find_element_by_name("p").send_keys("dudu666")
+                    elem_but = self.dr.find_element_by_id("login_button").click()
+                    self.conf.set('Option', 'qq_index', '1')
+                    self.conf.write(open("qq_index.txt", "w"))
+                else:
+                    # self.dr.find_element_by_xpath("//*[@id='qlogin_list']/a[3]").click()
+                    elem_user = self.dr.find_element_by_name("u").send_keys("1576558587")
+                    time.sleep(1)
+                    elem_pwd = self.dr.find_element_by_name("p").send_keys("dudu666")
+                    elem_but = self.dr.find_element_by_id("login_button").click()
+                    self.conf.set('Option', 'qq_index', '3')
+                    self.conf.write(open("qq_index.txt", "w"))
+                print("登录成功")
+
+                time.sleep(3)
+                try:
+                    print("找流畅")
+                    self.dr.find_element_by_xpath(
+                        "//*[@id='video-container-" + self.test_web_site[21:] + "']/div/div[5]/div[8]/a").click()
+                    time.sleep(1)
+                    self.dr.find_element_by_link_text("流畅").click()
+                    # dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]/div/div[2]/div[2]/a[4]").click()
+                except:
+                    try:
+                        print("找高清")
+                        time.sleep(1)
+                        self.dr.find_element_by_link_text("高清").click()
+                        # dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]").click()
+                        # dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]/div/div[2]/div[2]/a[3]").click()
+                    except Exception as e:
+                        print(e)
+
+                # 刷新指定次数
+                interval_time = random.randint(self.test_interval_1, self.test_interval_2)
+                count = self.send_time
+                while count > 0:
+                    print('The count is:', count)
+                    count = count - 1
+                    time.sleep(interval_time)
+                    self.dr.refresh()  # 刷新方法 refresh
+                    print("刷新成功")
+                print("关闭显示器")
+                self.dr.quit()
+            except Exception as e:
+                print(e)
+            # 切换 qq 号
+            qq_interval_time = random.randint(self.test_interval_3, self.test_interval_4)
+            print(qq_interval_time)
+            time.sleep(qq_interval_time)
 
     # 选择切换
     def Select(self, index):
@@ -135,40 +187,35 @@ class UiDialog(object):
 
     def ReadCfg(self):
         # 生成config对象
-        conf = configparser.ConfigParser()
+
         # 用config对象读取配置文件
-        conf.read("test.cfg")
+        self.conf.read("test.cfg")
         # 以列表形式返回所有的section
-        sections = conf.sections()
+        sections = self.conf.sections()
         print("sections:", sections)  # sections: ['sec_b', 'Option']
         # 得到指定section的所有option
-        options = conf.options("Option")
+        options = self.conf.options("Option")
         print("options:", options)  # options: ['a_key1', 'a_key2']
         # 得到指定section的所有键值对
-        kvs = conf.items("Option")
+        kvs = self.conf.items("Option")
         print("Option:", kvs)  # Option: [('a_key1', '20'), ('a_key2', '10')]
         # 指定section，option读取值
-        self.interval_1 = conf.getint("Option", "interval_1")
-        self.interval_2 = conf.getint("Option", "interval_2")
-        self.interval_3 = conf.getint("Option", "interval_3")
-        self.interval_4 = conf.getint("Option", "interval_4")
-        self.sent_time_1 = conf.getint("Option", "sent_time_1")
-        self.sent_time_2 = conf.getint("Option", "sent_time_2")
-        self.web_site = conf.get("Option", "web_site")
-        self.host = conf.get("Option", 'host')
-        self.user = conf.get("Option", 'user')
-        self.password = conf.get("Option", 'password')
-        self.db = conf.get("Option", 'db')
+        self.test_interval_1 = self.conf.getint("Option", "test_interval_1")
+        self.test_interval_2 = self.conf.getint("Option", "test_interval_2")
+        self.test_interval_3 = self.conf.getint("Option", "test_interval_3")
+        self.test_interval_4 = self.conf.getint("Option", "test_interval_4")
+        self.test_sent_time_1 = self.conf.getint("Option", "test_sent_time_1")
+        self.test_sent_time_2 = self.conf.getint("Option", "test_sent_time_2")
+        self.test_web_site = self.conf.get("Option", "test_web_site")
+        self.qq_index = self.conf.getint("Option", "qq_index")
 
-        print("value for Option's interval_1:", self.interval_1)  # value for Option's a_key1: 20
-        print("value for Option's interval_2:", self.interval_2)  # value for Option's a_key2: 10
-        print("value for Option's interval_3:", self.interval_3)  # value for Option's a_key2: 10
-        print("value for Option's interval_ 4:", self.interval_4)  # value for Option's a_key2: 10
-        print("value for Option's sent_time_1:", self.sent_time_1)  # value for Option's a_key2: 10
-        print("value for Option's sent_time_2:", self.sent_time_2)  # value for Option's a_key2: 10
-        print("value for Option's web:", self.web_site)  # value for Option's a_key2: 10
-
-        send_time = random.randint(self.sent_time_1, self.sent_time_2)
+        print("value for Option's interval_1:", self.test_interval_1)  # value for Option's a_key1: 20
+        print("value for Option's interval_2:", self.test_interval_2)  # value for Option's a_key2: 10
+        print("value for Option's interval_3:", self.test_interval_3)  # value for Option's a_key2: 10
+        print("value for Option's interval_ 4:", self.test_interval_4)  # value for Option's a_key2: 10
+        print("value for Option's sent_time_1:", self.test_sent_time_1)  # value for Option's a_key2: 10
+        print("value for Option's sent_time_2:", self.test_sent_time_2)  # value for Option's a_key2: 10
+        print("value for Option's web:", self.test_web_site)  # value for Option's a_key2: 10
 
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
@@ -329,6 +376,14 @@ class UiDialog(object):
         self.btn_start.clicked.connect(self.Start)
         self.comboBox.currentIndexChanged.connect(self.Select)
 
+        # 加载配置文件内容
+        self.interval_1.setText(str(self.test_interval_1))
+        self.interval_2.setText(str(self.test_interval_2))
+        self.interval_3.setText(str(self.test_interval_3))
+        self.interval_4.setText(str(self.test_interval_4))
+        self.sent_time_1.setText(str(self.test_sent_time_1))
+        self.sent_time_2.setText(str(self.test_sent_time_2))
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "客户端"))
@@ -366,7 +421,7 @@ class UiDialog(object):
         self.label_2.setText(_translate("Dialog", "间隔时间"))
         self.interval_1.setText(_translate("Dialog", "1200"))
         self.interval_2.setText(_translate("Dialog", "1500"))
-        self.label_3.setText(_translate("Dialog", "发送次数"))
+        self.label_3.setText(_translate("Dialog", "刷新次数"))
         self.sent_time_1.setText(_translate("Dialog", "3"))
         self.sent_time_2.setText(_translate("Dialog", "5"))
         self.label_4.setText(_translate("Dialog", "间隔时间"))
