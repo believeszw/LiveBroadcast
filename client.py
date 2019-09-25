@@ -50,9 +50,9 @@ class UiDialog(object):
     options.add_argument('--log-level=3')
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
-    def __init__(self):
-        self.ReadCfg()
-        self.send_time = random.randint(self.test_sent_time_1, self.test_sent_time_2)
+    # def __init__(self):
+    #     self.ReadCfg()
+    #     self.send_time = random.randint(self.test_sent_time_1, self.test_sent_time_2)
 
     def __del__(self):
         # 关闭游标和数据库的连接
@@ -117,12 +117,15 @@ class UiDialog(object):
                             self.is_run = current_row
                             print("is_run = ", self.is_run)
                             self.StartTask()
+                            print("task done, sleep 60")
                             time.sleep(60)
                             break
 
                     time.sleep(60)
 
     def StartTask(self):
+        self.test_web_site = self.table.item(self.is_run, 3).text()
+        print(self.test_web_site)
         while True:
             # 切换账号
             if self.qq_index == 3:
@@ -199,7 +202,7 @@ class UiDialog(object):
         print("重新加载数据", index)
         self.Refresh()
 
-    def ReadCfg(self):       
+    def ReadCfg(self):
         # 用config对象读取配置文件
         self.conf.read("conf/test.cfg")
         # 以列表形式返回所有的section
@@ -212,14 +215,19 @@ class UiDialog(object):
         kvs = self.conf.items("Option")
         print("Option:", kvs)  # Option: [('a_key1', '20'), ('a_key2', '10')]
         # 指定section，option读取值
-        self.test_interval_1 = self.conf.getint("Option", "test_interval_1")
-        self.test_interval_2 = self.conf.getint("Option", "test_interval_2")
-        self.test_interval_3 = self.conf.getint("Option", "test_interval_3")
-        self.test_interval_4 = self.conf.getint("Option", "test_interval_4")
-        self.test_sent_time_1 = self.conf.getint("Option", "test_sent_time_1")
-        self.test_sent_time_2 = self.conf.getint("Option", "test_sent_time_2")
-        self.test_web_site = self.conf.get("Option", "test_web_site")
-        self.qq_index = self.conf.getint("Option", "qq_index")
+        # self.test_interval_1 = self.conf.getint("Option", "test_interval_1")
+        # self.test_interval_2 = self.conf.getint("Option", "test_interval_2")
+        # self.test_interval_3 = self.conf.getint("Option", "test_interval_3")
+        # self.test_interval_4 = self.conf.getint("Option", "test_interval_4")
+        # self.test_sent_time_1 = self.conf.getint("Option", "test_sent_time_1")
+        # self.test_sent_time_2 = self.conf.getint("Option", "test_sent_time_2")
+        # self.test_web_site = self.conf.get("Option", "test_web_site")
+        self.test_interval_1 = int(self.interval_1.text())
+        self.test_interval_2 = int(self.interval_2.text())
+        self.test_interval_3 = int(self.interval_3.text())
+        self.test_interval_4 = int(self.interval_4.text())
+        self.test_sent_time_1 = int(self.sent_time_1.text())
+        self.test_sent_time_2 = int(self.sent_time_2.text())
 
         print("value for Option's interval_1:", self.test_interval_1)  # value for Option's a_key1: 20
         print("value for Option's interval_2:", self.test_interval_2)  # value for Option's a_key2: 10
@@ -389,12 +397,14 @@ class UiDialog(object):
         self.comboBox.currentIndexChanged.connect(self.Select)
 
         # 加载配置文件内容
-        self.interval_1.setText(str(self.test_interval_1))
-        self.interval_2.setText(str(self.test_interval_2))
-        self.interval_3.setText(str(self.test_interval_3))
-        self.interval_4.setText(str(self.test_interval_4))
-        self.sent_time_1.setText(str(self.test_sent_time_1))
-        self.sent_time_2.setText(str(self.test_sent_time_2))
+        # self.interval_1.setText(str(self.test_interval_1))
+        # self.interval_2.setText(str(self.test_interval_2))
+        # self.interval_3.setText(str(self.test_interval_3))
+        # self.interval_4.setText(str(self.test_interval_4))
+        # self.sent_time_1.setText(str(self.test_sent_time_1))
+        # self.sent_time_2.setText(str(self.test_sent_time_2))
+        self.ReadCfg()
+        self.send_time = random.randint(self.test_sent_time_1, self.test_sent_time_2)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
