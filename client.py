@@ -26,6 +26,7 @@ class UiDialog(object):
     test_sent_time_2 = 0
     test_web_site = ""
     qq_index = 0
+    is_run = -1
     conf = configparser.ConfigParser()
     # 读取 json 配置文件
     with open('conf/default.conf', 'r') as confFile:
@@ -97,54 +98,46 @@ class UiDialog(object):
         else:
             print("开始")
             self.btn_start.setText("结束")
+            while True:
+                current_time = time.strftime("%H:%M")  # 24小时格式g
+                current_time = "20:00"
+                for current_row in range(self.table.rowCount()):
+                    begin_time = self.table.item(current_row, 1).text()
+                    end_time = self.table.item(current_row, 2).text()
+                    print(current_time)
+                    print(begin_time)
+                    print(end_time > begin_time)
+                    print(current_time > begin_time)
+                    if end_time > begin_time:
+                        end_time += "24:00"
 
+                    # 开始
+                    if current_time > begin_time:
+                        if current_time < end_time:
+                            print("start")
+                            self.is_run = current_row
+                            self.StartTask()
+                            time.sleep(60)
+                            break
+
+                    time.sleep(60)
+
+    def StartTask(self):
+        while True:
+            # 切换账号
+            if self.qq_index == 3:
+                userDataPath = "/home/believe/.config/google-chrome/test"
+            else:
+                userDataPath = "/home/believe/.config/google-chrome/believe"
+            self.options.add_argument("--user-data-dir=" + userDataPath + "/ChromeUserData")
+            self.options.add_argument("--profile-directory=Profile ")
+
+            # 启动浏览器
             try:
-                # print(web_site)
                 self.dr = webdriver.Chrome(options=self.options)
                 self.dr.get("https://egame.qq.com")
-                print("gaga")
-                # print("gaga")
-                # dr.maximize_window()
-                # self.dr.implicitly_wait(5)
-                print(self.dr.title)
                 self.dr.get(self.test_web_site)
                 self.dr.implicitly_wait(3)
-
-                # 点击QQ登录
-                self.dr.find_element_by_link_text("登录").click()
-                time.sleep(3)
-
-                # 切换到iframe
-                self.dr.switch_to.frame("_egame_login_frame_qq_")
-                self.dr.switch_to.frame("ptlogin_iframe")
-
-                # 点击本地qq号登陆
-                self.dr.execute_script('document.getElementById("qlogin").style="display: none;"')
-                self.dr.execute_script('document.getElementsByClassName("authLogin").style="display: none;"')
-                self.dr.execute_script('document.getElementById("web_qr_login").style="display: block;"')
-                # browser.evaluate_script('document.getElementById("batch_quto").contentEditable = true')
-                time.sleep(3)
-
-                if self.qq_index == 3:
-                    # self.dr.find_element_by_xpath("//*[@id='qlogin_list']/a[1]").click()
-                    # 隐藏初始界面
-                    elem_user = self.dr.find_element_by_name("u").send_keys("1576558587")
-                    time.sleep(1)
-                    elem_pwd = self.dr.find_element_by_name("p").send_keys("dudu666")
-                    elem_but = self.dr.find_element_by_id("login_button").click()
-                    self.conf.set('Option', 'qq_index', '1')
-                    self.conf.write(open("qq_index.txt", "w"))
-                else:
-                    # self.dr.find_element_by_xpath("//*[@id='qlogin_list']/a[3]").click()
-                    elem_user = self.dr.find_element_by_name("u").send_keys("1576558587")
-                    time.sleep(1)
-                    elem_pwd = self.dr.find_element_by_name("p").send_keys("dudu666")
-                    elem_but = self.dr.find_element_by_id("login_button").click()
-                    self.conf.set('Option', 'qq_index', '3')
-                    self.conf.write(open("qq_index.txt", "w"))
-                print("登录成功")
-
-                time.sleep(3)
                 try:
                     print("找流畅")
                     self.dr.find_element_by_xpath(
@@ -167,7 +160,8 @@ class UiDialog(object):
                 count = self.send_time
                 while count > 0:
                     print('The count is:', count)
-                    count = count - 1
+                    # count = count - 1
+                    count = 0
                     time.sleep(interval_time)
                     self.dr.refresh()  # 刷新方法 refresh
                     print("刷新成功")
@@ -175,12 +169,33 @@ class UiDialog(object):
                 self.dr.quit()
             except Exception as e:
                 print(e)
+            current_time = time.strftime("%H:%M")  # 24小时格式g
+            current_time = "00:00"
+
+            end_time = self.table.item(self.is_run, 2).text()
+            print(current_time)
+            if current_time > end_time:
+                print("task end")
+                self.is_run = -1
+                break
+            if current_time == "00:00":
+                if end_time == "23:59":
+                    print("task end 00:00")
+                    self.is_run = -1
+                    break
+            if current_time == "0:00":
+                if end_time == "23:59":
+                    print("task end 0:00")
+                    self.is_run = -1
+                    break
+
             # 切换 qq 号
             qq_interval_time = random.randint(self.test_interval_3, self.test_interval_4)
             print(qq_interval_time)
             time.sleep(qq_interval_time)
 
-    # 选择切换
+        # 选择切换
+
     def Select(self, index):
         print("重新加载数据", index)
         self.Refresh()
