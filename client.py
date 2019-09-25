@@ -100,14 +100,13 @@ class UiDialog(object):
             self.btn_start.setText("结束")
             while True:
                 current_time = time.strftime("%H:%M")  # 24小时格式g
-                current_time = "20:00"
+                current_time = "00:10"
                 for current_row in range(self.table.rowCount()):
                     begin_time = self.table.item(current_row, 1).text()
                     end_time = self.table.item(current_row, 2).text()
-                    print(current_time)
-                    print(begin_time)
-                    print(end_time > begin_time)
-                    print(current_time > begin_time)
+                    print("current_time = ", current_time, " begin_time = ", begin_time)
+                    print("end_time > begin_time = ", end_time > begin_time)
+                    print("current_time > begin_time = ", current_time > begin_time)
                     if end_time > begin_time:
                         end_time += "24:00"
 
@@ -116,6 +115,7 @@ class UiDialog(object):
                         if current_time < end_time:
                             print("start")
                             self.is_run = current_row
+                            print("is_run = ", self.is_run)
                             self.StartTask()
                             time.sleep(60)
                             break
@@ -126,8 +126,14 @@ class UiDialog(object):
         while True:
             # 切换账号
             if self.qq_index == 3:
+                self.conf.set('Option', 'qq_index', '1')
+                print("qq_index = 1")
+                self.conf.write(open("conf/test.cfg", "w"))
                 userDataPath = "/home/believe/.config/google-chrome/test"
             else:
+                self.conf.set('Option', 'qq_index', '3')
+                print("qq_index = 3")
+                self.conf.write(open("conf/test.cfg", "w"))
                 userDataPath = "/home/believe/.config/google-chrome/believe"
             self.options.add_argument("--user-data-dir=" + userDataPath + "/ChromeUserData")
             self.options.add_argument("--profile-directory=Profile ")
@@ -160,8 +166,7 @@ class UiDialog(object):
                 count = self.send_time
                 while count > 0:
                     print('The count is:', count)
-                    # count = count - 1
-                    count = 0
+                    count = count - 1
                     time.sleep(interval_time)
                     self.dr.refresh()  # 刷新方法 refresh
                     print("刷新成功")
@@ -170,41 +175,33 @@ class UiDialog(object):
             except Exception as e:
                 print(e)
             current_time = time.strftime("%H:%M")  # 24小时格式g
-            current_time = "00:00"
 
             end_time = self.table.item(self.is_run, 2).text()
-            print(current_time)
             if current_time > end_time:
                 print("task end")
                 self.is_run = -1
+                print("is_run = ", self.is_run)
                 break
             if current_time == "00:00":
                 if end_time == "23:59":
                     print("task end 00:00")
                     self.is_run = -1
-                    break
-            if current_time == "0:00":
-                if end_time == "23:59":
-                    print("task end 0:00")
-                    self.is_run = -1
+                    print("is_run = ", self.is_run)
                     break
 
             # 切换 qq 号
             qq_interval_time = random.randint(self.test_interval_3, self.test_interval_4)
-            print(qq_interval_time)
+            print("qq_interval_time = ", qq_interval_time)
             time.sleep(qq_interval_time)
 
-        # 选择切换
-
+    # 选择切换
     def Select(self, index):
         print("重新加载数据", index)
         self.Refresh()
 
-    def ReadCfg(self):
-        # 生成config对象
-
+    def ReadCfg(self):       
         # 用config对象读取配置文件
-        self.conf.read("test.cfg")
+        self.conf.read("conf/test.cfg")
         # 以列表形式返回所有的section
         sections = self.conf.sections()
         print("sections:", sections)  # sections: ['sec_b', 'Option']
