@@ -100,7 +100,6 @@ class UiDialog(object):
             self.btn_start.setText("结束")
             while True:
                 current_time = time.strftime("%H:%M")  # 24小时格式g
-                current_time = "00:10"
                 for current_row in range(self.table.rowCount()):
                     begin_time = self.table.item(current_row, 1).text()
                     end_time = self.table.item(current_row, 2).text()
@@ -127,12 +126,13 @@ class UiDialog(object):
         self.test_web_site = self.table.item(self.is_run, 3).text()
         print(self.test_web_site)
         while True:
+            self.ReadCfg()
             # 切换账号
             if self.qq_index == 3:
                 self.conf.set('Option', 'qq_index', '1')
                 print("qq_index = 1")
                 self.conf.write(open("conf/test.cfg", "w"))
-                userDataPath = "/home/believe/.config/google-chrome/test"
+                userDataPath = "/home/believe/.config/google-chrome/believe2"
             else:
                 self.conf.set('Option', 'qq_index', '3')
                 print("qq_index = 3")
@@ -145,6 +145,7 @@ class UiDialog(object):
             try:
                 self.dr = webdriver.Chrome(options=self.options)
                 self.dr.get("https://egame.qq.com")
+                self.dr.implicitly_wait(3)
                 self.dr.get(self.test_web_site)
                 self.dr.implicitly_wait(3)
                 try:
@@ -228,6 +229,8 @@ class UiDialog(object):
         self.test_interval_4 = int(self.interval_4.text())
         self.test_sent_time_1 = int(self.sent_time_1.text())
         self.test_sent_time_2 = int(self.sent_time_2.text())
+        self.send_time = random.randint(self.test_sent_time_1, self.test_sent_time_2)
+        self.qq_index = self.conf.getint("Option", "qq_index")
 
         print("value for Option's interval_1:", self.test_interval_1)  # value for Option's a_key1: 20
         print("value for Option's interval_2:", self.test_interval_2)  # value for Option's a_key2: 10
@@ -404,7 +407,7 @@ class UiDialog(object):
         # self.sent_time_1.setText(str(self.test_sent_time_1))
         # self.sent_time_2.setText(str(self.test_sent_time_2))
         self.ReadCfg()
-        self.send_time = random.randint(self.test_sent_time_1, self.test_sent_time_2)
+
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
