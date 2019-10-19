@@ -95,8 +95,8 @@ class SeleniumHandler(QtCore.QThread, UiDialog):
                 ActionChains(self.dr).move_to_element(element).perform()
                 try:
                     print("关闭弹幕")
-                    self.dr.find_element_by_xpath("//*[@id='video-container-" + self.test_web_site[21:] + "]/div/div[5]/div[9]").click()            
-                    self.dr.find_element_by_xpath("//*[@id='video-container-" + self.test_web_site[21:] + "]/div/div[5]/div[10]").click()
+                    self.dr.find_element_by_xpath("//*[@id='video-container-" + self.test_web_site[21:] + "']/div/div[5]/div[9]").click()            
+                    self.dr.find_element_by_xpath("//*[@id='video-container-" + self.test_web_site[21:] + "']/div/div[5]/div[10]").click()
                 except Exception as e:
                     print(e)
             print("关闭显示器")
