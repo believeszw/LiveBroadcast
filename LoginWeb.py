@@ -74,6 +74,12 @@ class SeleniumHandler(QtCore.QThread, UiDialog):
             time.sleep(1)
             element = self.dr.find_element_by_xpath('//*[@id="__layout"]/div/div[2]/div[1]/div[2]/div[1]')
             ActionChains(self.dr).move_to_element(element).perform()
+            try:
+                print("关闭弹幕")
+                self.dr.find_element_by_xpath("//*[@id='video-container-" + self.test_web_site[21:] + "']/div/div[5]/div[9]").click()            
+                self.dr.find_element_by_xpath("//*[@id='video-container-" + self.test_web_site[21:] + "']/div/div[5]/div[10]").click()
+            except Exception as e:
+                print(e)
             # 刷新指定次数
             interval_time = random.randint(int(self.uidialog.interval_1.text()), int(self.uidialog.interval_2.text()))
             count = random.randint(int(self.uidialog.sent_time_1.text()), int(self.uidialog.sent_time_2.text()))
@@ -87,7 +93,12 @@ class SeleniumHandler(QtCore.QThread, UiDialog):
                 time.sleep(1)
                 element = self.dr.find_element_by_xpath('//*[@id="__layout"]/div/div[2]/div[1]/div[2]/div[1]')
                 ActionChains(self.dr).move_to_element(element).perform()
-
+                try:
+                    print("关闭弹幕")
+                    self.dr.find_element_by_xpath("//*[@id='video-container-" + self.test_web_site[21:] + "]/div/div[5]/div[9]").click()            
+                    self.dr.find_element_by_xpath("//*[@id='video-container-" + self.test_web_site[21:] + "]/div/div[5]/div[10]").click()
+                except Exception as e:
+                    print(e)
             print("关闭显示器")
             self.dr.quit()
         except Exception as e:
