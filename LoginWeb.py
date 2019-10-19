@@ -2,7 +2,6 @@
  
 from PyQt5 import QtCore, QtGui
 import time
-import wx 
 import random
 from client import UiDialog
 from selenium import webdriver

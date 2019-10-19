@@ -3,8 +3,11 @@ import sys
 from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow
 from PyQt5.uic import loadUi
 import client
+import subprocess 
 
 if __name__ == '__main__':
+    process = subprocess.Popen(["git", "pull"], stdout=subprocess.PIPE) 
+    output = process.communicate()[0]
     app = QApplication(sys.argv)
     MainWindow = QDialog()
     ui = client.UiDialog()
