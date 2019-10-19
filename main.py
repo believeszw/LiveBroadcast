@@ -9,5 +9,10 @@ if __name__ == '__main__':
     MainWindow = QDialog()
     ui = client.UiDialog()
     ui.setupUi(MainWindow)
+    from LoginWeb import SeleniumHandler
+    login_process = SeleniumHandler()
+    login_process.GetUi(ui)
+    #启动线程
+    # login_process.start()
     MainWindow.show()
     sys.exit(app.exec())

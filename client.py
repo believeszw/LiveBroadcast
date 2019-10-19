@@ -6,28 +6,19 @@
 #
 # WARNING! All changes made in this file will be lost!
 import time
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pymysql
 import json
 import configparser
-import random
-from selenium import webdriver
-
 from PyQt5.QtWidgets import QTableWidgetItem
-
+from PyQt5.QtCore import QTimer
 
 class UiDialog(object):
-    test_interval_1 = 0
-    test_interval_2 = 0
-    test_interval_3 = 0
-    test_interval_4 = 0
-    test_sent_time_1 = 0
-    test_sent_time_2 = 0
-    test_web_site = ""
-    qq_index = 0
     is_run = -1
+    id = -1
     conf = configparser.ConfigParser()
+    timer = QTimer() #初始化一个定时器
+    web_site_ = ""
     # 读取 json 配置文件
     with open('conf/default.conf', 'r') as confFile:
         confStr = confFile.read()
@@ -46,10 +37,8 @@ class UiDialog(object):
     # 获取游标
     cursor = connection.cursor()
 
-    options = webdriver.ChromeOptions()
-    options.add_argument('--log-level=3')
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
-
+    # def close_chrome(self):
+        
     # def __init__(self):
     #     self.ReadCfg()
     #     self.send_time = random.randint(self.test_sent_time_1, self.test_sent_time_2)
@@ -69,11 +58,15 @@ class UiDialog(object):
         # 获取单条数据
         data = self.cursor.fetchall()
         ret_json = json.dumps(data)
-        print(ret_json)
+        # print(ret_json)
         json_array = json.loads(ret_json)
 
         self.table.clearContents()
         count = 0
+        self.is_run = -1
+        self.id = -1
+        print("id = " + str(self.id) + ", is_run = " + str(self.is_run))
+        current_time = time.strftime("%H:%M")  # 24小时格式 
         for it in json_array:
             self.table.setRowCount(count + 1)
             item = QTableWidgetItem()
@@ -87,158 +80,58 @@ class UiDialog(object):
             self.table.setItem(count, 2, item)
             item = QTableWidgetItem()
             item.setText(it['web'])
-            self.table.setItem(count, 3, item)
-            count = count + 1
+            self.table.setItem(count, 3, item)            
 
+            begin_time = it['begin_time']
+            end_time   = it['end_time']
+            # 判断是否有正在运行的任务
+            if current_time >= begin_time:
+                if current_time < end_time:
+                    print("有正在运行的任务")
+                    self.web_site_ = it['web']
+                    self.is_run = count
+                    self.id = self.table.item(count, 0).text()
+                    print("is_run = ", self.is_run)
+                    print("id = ", self.id)
+            # 判断是否有需要停止的任务
+            if (self.is_run >= 0):
+                if (self.is_run != count):
+                    count = count + 1
+                    continue
+                if (current_time >= end_time):
+                    print("有需要停止的任务")
+                    self.is_run = -1
+                    self.id = -1
+                    self.web_site_ = ""
+                    print("is_run = ", self.is_run)
+                    print("id = ", self.id)  
+            count = count + 1
+    
     # 开始
     def Start(self):
         if self.btn_start.text() == "结束":
+            print("end_button click!")
             self.btn_start.setText("开始")
-            self.dr.quit()
+            self.is_run = -2
+            self.id     = -2
+            self.timer.stop() 
         else:
             print("开始")
             self.btn_start.setText("结束")
-            while True:
-                current_time = time.strftime("%H:%M")  # 24小时格式g
-                for current_row in range(self.table.rowCount()):
-                    begin_time = self.table.item(current_row, 1).text()
-                    end_time = self.table.item(current_row, 2).text()
-                    print("current_time = ", current_time, " begin_time = ", begin_time)
-                    print("end_time > begin_time = ", end_time > begin_time)
-                    print("current_time > begin_time = ", current_time > begin_time)
-                    if end_time > begin_time:
-                        end_time += "24:00"
-
-                    # 开始
-                    if current_time > begin_time:
-                        if current_time < end_time:
-                            print("start")
-                            self.is_run = current_row
-                            print("is_run = ", self.is_run)
-                            self.StartTask()
-                            print("task done, sleep 60")
-                            time.sleep(60)
-                            break
-
-                    time.sleep(60)
-
-    def StartTask(self):
-        self.test_web_site = self.table.item(self.is_run, 3).text()
-        print(self.test_web_site)
-        while True:
-            self.ReadCfg()
-            # 切换账号
-            if self.qq_index == 3:
-                self.conf.set('Option', 'qq_index', '1')
-                print("qq_index = 1")
-                self.conf.write(open("conf/test.cfg", "w"))
-                userDataPath = "/home/believe/.config/google-chrome/believe2"
-            else:
-                self.conf.set('Option', 'qq_index', '3')
-                print("qq_index = 3")
-                self.conf.write(open("conf/test.cfg", "w"))
-                userDataPath = "/home/believe/.config/google-chrome/believe"
-            self.options.add_argument("--user-data-dir=" + userDataPath + "/ChromeUserData")
-            self.options.add_argument("--profile-directory=Profile ")
-
-            # 启动浏览器
-            try:
-                self.dr = webdriver.Chrome(options=self.options)
-                self.dr.get("https://egame.qq.com")
-                self.dr.implicitly_wait(3)
-                self.dr.get(self.test_web_site)
-                self.dr.implicitly_wait(3)
-                try:
-                    print("找流畅")
-                    self.dr.find_element_by_xpath(
-                        "//*[@id='video-container-" + self.test_web_site[21:] + "']/div/div[5]/div[8]/a").click()
-                    time.sleep(1)
-                    self.dr.find_element_by_link_text("流畅").click()
-                    # dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]/div/div[2]/div[2]/a[4]").click()
-                except:
-                    try:
-                        print("找高清")
-                        time.sleep(1)
-                        self.dr.find_element_by_link_text("高清").click()
-                        # dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]").click()
-                        # dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]/div/div[2]/div[2]/a[3]").click()
-                    except Exception as e:
-                        print(e)
-
-                # 刷新指定次数
-                interval_time = random.randint(self.test_interval_1, self.test_interval_2)
-                count = self.send_time
-                while count > 0:
-                    print('The count is:', count)
-                    count = count - 1
-                    time.sleep(interval_time)
-                    self.dr.refresh()  # 刷新方法 refresh
-                    print("刷新成功")
-                print("关闭显示器")
-                self.dr.quit()
-            except Exception as e:
-                print(e)
-            current_time = time.strftime("%H:%M")  # 24小时格式g
-
-            end_time = self.table.item(self.is_run, 2).text()
-            if current_time > end_time:
-                print("task end")
-                self.is_run = -1
-                print("is_run = ", self.is_run)
-                break
-            if current_time == "00:00":
-                if end_time == "23:59":
-                    print("task end 00:00")
-                    self.is_run = -1
-                    print("is_run = ", self.is_run)
-                    break
-
-            # 切换 qq 号
-            qq_interval_time = random.randint(self.test_interval_3, self.test_interval_4)
-            print("qq_interval_time = ", qq_interval_time)
-            time.sleep(qq_interval_time)
-
+            self.is_run = -1
+            self.id     = -1
+            self.timer.timeout.connect(self.operate) #计时结束调用operate()方法
+            self.timer.start(5400) #设置计时间隔并启动
+                
+    def operate(self):
+        if (self.is_run == -2):
+            return
+        self.Refresh()
+    
     # 选择切换
     def Select(self, index):
         print("重新加载数据", index)
         self.Refresh()
-
-    def ReadCfg(self):
-        # 用config对象读取配置文件
-        self.conf.read("conf/test.cfg")
-        # 以列表形式返回所有的section
-        sections = self.conf.sections()
-        print("sections:", sections)  # sections: ['sec_b', 'Option']
-        # 得到指定section的所有option
-        options = self.conf.options("Option")
-        print("options:", options)  # options: ['a_key1', 'a_key2']
-        # 得到指定section的所有键值对
-        kvs = self.conf.items("Option")
-        print("Option:", kvs)  # Option: [('a_key1', '20'), ('a_key2', '10')]
-        # 指定section，option读取值
-        # self.test_interval_1 = self.conf.getint("Option", "test_interval_1")
-        # self.test_interval_2 = self.conf.getint("Option", "test_interval_2")
-        # self.test_interval_3 = self.conf.getint("Option", "test_interval_3")
-        # self.test_interval_4 = self.conf.getint("Option", "test_interval_4")
-        # self.test_sent_time_1 = self.conf.getint("Option", "test_sent_time_1")
-        # self.test_sent_time_2 = self.conf.getint("Option", "test_sent_time_2")
-        # self.test_web_site = self.conf.get("Option", "test_web_site")
-        self.test_interval_1 = int(self.interval_1.text())
-        self.test_interval_2 = int(self.interval_2.text())
-        self.test_interval_3 = int(self.interval_3.text())
-        self.test_interval_4 = int(self.interval_4.text())
-        self.test_sent_time_1 = int(self.sent_time_1.text())
-        self.test_sent_time_2 = int(self.sent_time_2.text())
-        self.send_time = random.randint(self.test_sent_time_1, self.test_sent_time_2)
-        self.qq_index = self.conf.getint("Option", "qq_index")
-
-        print("value for Option's interval_1:", self.test_interval_1)  # value for Option's a_key1: 20
-        print("value for Option's interval_2:", self.test_interval_2)  # value for Option's a_key2: 10
-        print("value for Option's interval_3:", self.test_interval_3)  # value for Option's a_key2: 10
-        print("value for Option's interval_ 4:", self.test_interval_4)  # value for Option's a_key2: 10
-        print("value for Option's sent_time_1:", self.test_sent_time_1)  # value for Option's a_key2: 10
-        print("value for Option's sent_time_2:", self.test_sent_time_2)  # value for Option's a_key2: 10
-        print("value for Option's web:", self.test_web_site)  # value for Option's a_key2: 10
 
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
@@ -399,16 +292,6 @@ class UiDialog(object):
         self.btn_start.clicked.connect(self.Start)
         self.comboBox.currentIndexChanged.connect(self.Select)
 
-        # 加载配置文件内容
-        # self.interval_1.setText(str(self.test_interval_1))
-        # self.interval_2.setText(str(self.test_interval_2))
-        # self.interval_3.setText(str(self.test_interval_3))
-        # self.interval_4.setText(str(self.test_interval_4))
-        # self.sent_time_1.setText(str(self.test_sent_time_1))
-        # self.sent_time_2.setText(str(self.test_sent_time_2))
-        self.ReadCfg()
-
-
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "客户端"))
@@ -463,4 +346,4 @@ class UiDialog(object):
         self.comboBox.setItemText(7, _translate("Dialog", "wang8"))
         self.comboBox.setItemText(8, _translate("Dialog", "wang9"))
         self.pushButton.setText(_translate("Dialog", "刷新"))
-        self.btn_start.setText(_translate("Dialog", "开始操作"))
+        self.btn_start.setText(_translate("Dialog", "开始"))
