@@ -5,3 +5,8 @@
 !*.md
 !*.sh
 !*.bat
+!*.cpp
+!*.h
+!*.pro
+!*.user
+!plugins
