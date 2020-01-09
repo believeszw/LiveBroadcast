@@ -107,17 +107,11 @@ def move_and_sharpness():
         print(e)
     time.sleep(2)
     try:
-        dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[9]").click()
-        time.sleep(1)
-        dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[10]").click()
-        time.sleep(1)
-        print("屏蔽礼物特效")
         dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]").click()
         time.sleep(1)
         dr.find_element_by_link_text("流畅").click()
         ActionChains(dr).move_by_offset(-40, -40).perform()
         print("流畅")
-        time.sleep(1)
     except:
         try:
             dr.find_element_by_link_text("高清").click()
@@ -127,7 +121,19 @@ def move_and_sharpness():
             print("高清+++++")
             s = traceback.format_exc()
             logging.error(s)
-    time.sleep(5)
+    time.sleep(1)
+    try:
+        dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[9]").click()
+        time.sleep(2)
+        dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[10]").click()
+        time.sleep(1)
+        print("屏蔽礼物特效")
+    except:
+        print("屏蔽礼物特效失败")
+        s = traceback.format_exc()
+        logging.error(s)
+
+    time.sleep(1)
 
     try:
         dr.find_element_by_xpath('//*[@id="__layout"]/div/div[2]/div[3]/div[4]/div[2]/div/div/div/div/i').click()
@@ -136,6 +142,7 @@ def move_and_sharpness():
         print("关闭红包失败")
         s = traceback.format_exc()
         logging.error(s)
+    time.sleep(1)
 
 
 while (0 < 9):
