@@ -10,3 +10,7 @@
 !*.pro
 !*.user
 !plugins
+!platforms
+!*.dll
+!*.lib
+!*.cfg
