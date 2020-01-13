@@ -96,11 +96,62 @@ kvs = conf_2.items("Option")
 # 取随机间隔时间
 send_time = random.randint(sent_time_1, sent_time_2)
 
+def move_and_sharpness():
+    try:
+        print("make video center")
+        time.sleep(3)
+        element = dr.find_element_by_xpath('//*[@id="__layout"]/div/div[2]/div[3]/div[2]/div[2]')
+        ActionChains(dr).move_to_element(element).perform()
+        print("移动ok")
+    except Exception as e:
+        print(e)
+    time.sleep(2)
+    try:
+        dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]").click()
+        time.sleep(1)
+        dr.find_element_by_link_text("流畅").click()
+        ActionChains(dr).move_by_offset(-40, -40).perform()
+        print("流畅")
+    except:
+        try:
+            dr.find_element_by_link_text("高清").click()
+            ActionChains(dr).move_by_offset(-40, -40).perform()
+            print("高清")
+        except:
+            print("高清+++++")
+            s = traceback.format_exc()
+            logging.error(s)
+    time.sleep(1)
+    try:
+        dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[9]").click()
+        time.sleep(2)
+        dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[10]").click()
+        time.sleep(2)
+        print("屏蔽礼物特效")
+    except:
+        print("屏蔽礼物特效失败")
+        s = traceback.format_exc()
+        logging.error(s)
+
+    time.sleep(1)
+
+    try:
+        dr.find_element_by_xpath('//*[@id="__layout"]/div/div[2]/div[3]/div[4]/div[2]/div/div/div/div/i').click()
+        print("关闭红包成功")
+    except:
+        print("关闭红包失败")
+        s = traceback.format_exc()
+        logging.error(s)
+    time.sleep(1)
+
+
 while (0 < 9):
     options = webdriver.ChromeOptions()
-    # options.add_argument('--no-startup-window')
+    #options.add_argument('--no-startup-window')
     options.add_argument('--disable-application-cache')
     options.add_argument('--log-level=3')
+    options.add_argument('--disable-gpu')
+    options.add_argument('blink-settings=imagesEnabled=false')
     options.add_argument('-disk-cache-size=1,-media-cache-size=1,-incognito')
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     qq_index = conf_2.getint("Option", "qq_index")
@@ -123,41 +174,12 @@ while (0 < 9):
         dr.set_window_size(GetSystemMetrics (0) * 11 / 12,  GetSystemMetrics (1) * 9 / 10)
         dr.get("https://egame.qq.com")
         print(dr.title)
-        time.sleep(5)
+        time.sleep(3)
         dr.get(web_site)
         dr.implicitly_wait(5)
         time.sleep(2)
 
-        try:
-            print("make video center")
-            time.sleep(1)
-            element = dr.find_element_by_xpath('//*[@id="__layout"]/div/div[2]/div[1]/div[2]/div[1]')
-            ActionChains(dr).move_to_element(element).perform()
-        except Exception as e:
-            print(e)
-
-        time.sleep(2)
-        try:
-            dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[8]").click()
-            dr.find_element_by_link_text("流畅").click()
-            time.sleep(1)
-            dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[9]").click()
-            time.sleep(1)
-            dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[10]").click()
-        except:
-            try:
-                dr.find_element_by_link_text("高清").click()
-            except:
-                s = traceback.format_exc()
-                logging.error(s)
-
-        time.sleep(5)
-
-        try:
-            dr.find_element_by_xpath('//*[@id="__layout"]/div/div[2]/div[3]/div[4]/div[2]/div/div/div/div/i').click()
-        except:
-            s = traceback.format_exc()
-            logging.error(s)
+        move_and_sharpness()
 
         #点击QQ登录
         try:
@@ -186,8 +208,6 @@ while (0 < 9):
             logging.error(s)
         print("登录成功")
 
-
-
         # 刷新指定次数
         interval_time = random.randint(interval_1, interval_2)
         count = send_time
@@ -197,16 +217,7 @@ while (0 < 9):
             count = count - 1
             dr.refresh() # 刷新方法 refresh
             time.sleep(3)
-            element = dr.find_element_by_xpath('//*[@id="__layout"]/div/div[2]/div[1]/div[2]/div[1]')
-            ActionChains(dr).move_to_element(element).perform()
-            try:
-                print("关闭弹幕")
-                time.sleep(3)
-                dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[9]").click()
-                time.sleep(1)
-                dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[10]").click()
-            except Exception as e:
-                print(e)
+            move_and_sharpness()
             print("刷新成功")
             time.sleep(interval_time)
         print("to exit browser")
