@@ -37,7 +37,7 @@ private:
 private:
     QStandardItemModel *list_model_;
     QTimer *timer_;
-    //QProcess *proc_;
+    QProcess *proc_;
     int cur_row_ = -1;
     bool is_run_;
     Ui::Dialog *ui;

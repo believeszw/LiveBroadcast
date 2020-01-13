@@ -53,8 +53,8 @@ Dialog::Dialog(QWidget *parent) :
     setWindowFlags(flags);
 
     is_run_ = false;
-    //proc_ = new QProcess();
-    //proc_->setEnvironment(proc_->environment());
+    proc_ = new QProcess(this);
+    proc_->setEnvironment(proc_->environment());
     InitTable();
     // 设置 1 min 的定时器
     timer_ = new QTimer(this);
@@ -65,10 +65,6 @@ Dialog::Dialog(QWidget *parent) :
 Dialog::~Dialog()
 {
     StopProcess();
-    delete list_model_;
-    list_model_ = nullptr;
-    delete timer_;
-    timer_ = nullptr;
     delete ui;
 }
 
@@ -160,13 +156,27 @@ void Dialog::WriteCfg(){
 void Dialog::StartProcess()
 {
     is_run_ = true;
-    Sleep(3000);
     QString appPath = QCoreApplication::applicationDirPath();
-    qDebug() << "Start Process";
+
+    proc_->start("cmd.exe");
+    QString arg = "cd " + appPath + tr(" \r\n");
+    arg.replace("/","\\\\");
+    char* args = arg.toLatin1().data();
+    qDebug() << args;
+    proc_->write(args);
+    proc_->waitForStarted();
+    proc_->write("curl -LJO https://github.com/believeszw/server/releases/download/1.0.0/login.py\r\n");
+
+    Sleep(2000);
+    appPath.replace("/","\\");
+//    qDebug() << appPath;
+    QStringList params;
+    params << appPath+tr("\\login.py");
+    qDebug() << "Start Process " << params;
 //    proc_->execute("python .")+appPath+tr("\\login.py");
-    QProcess proc_;
-    proc_.start(tr("py ")+appPath+tr(".\\login.py"));
-    proc_.waitForStarted();
+    proc_->startDetached(tr("py"), params);
+//    proc_->startDetached(tr("py")+appPath+tr("\\login.py"));
+    proc_->waitForStarted();
 
     ListViewAdd("py login.py");
 //    proc_->start("cmd.exe");
@@ -196,7 +206,7 @@ void Dialog::KillTask()
     QProcess process;
     process.start("cmd.exe");
     process.write ("taskkill -f -im chromedriver.exe \n\r");
-    process.write ("taskkill -f -im chrome.exe \n\r");
+    process.write ("taskkill -im chrome.exe \n\r");
     process.write ("taskkill -f -im python.exe \n\r");
     process.write ("exit\n\r");
     process.waitForFinished();
@@ -341,15 +351,15 @@ void Dialog::showTime()
 //                StartProcess();
 //                return;
 //            }
-            if (!CheckAppRunningStatus("py.exe"))
-            {
-                qDebug() << "py.exe";
-                ListViewAdd("python未运行，重新调用");
-                KillTask();
-                Sleep(5000);
-                StartProcess();
-                return;
-            }
+//            if (!CheckAppRunningStatus("py"))
+//            {
+//                qDebug() << "py.exe";
+//                ListViewAdd("python未运行，重新调用");
+//                KillTask();
+//                Sleep(5000);
+//                StartProcess();
+//                return;
+//            }
         }
         int tmp_cur_hour = cur_hour;
         if (is_run_ == true && cur_row_ == i && cur_hour < begin_time_hour)
