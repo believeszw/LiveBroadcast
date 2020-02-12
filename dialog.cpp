@@ -2,6 +2,7 @@
 #include "ui_dialog.h"
 #include <QDebug>
 #include <QFile>
+#include <QTextCodec>
 #include <QTime>
 #include "mysql.h"
 #include <QMessageBox>
@@ -59,6 +60,7 @@ Dialog::Dialog(QWidget *parent) :
     // 设置 1 min 的定时器
     timer_ = new QTimer(this);
     connect(timer_, SIGNAL(timeout()), this, SLOT(showTime()));
+    MySql::GetInstance()->DownloadPy();
 }
 
 
@@ -158,25 +160,55 @@ void Dialog::StartProcess()
     is_run_ = true;
     QString appPath = QCoreApplication::applicationDirPath();
 
-    proc_->start("cmd.exe");
-    QString arg = "cd " + appPath + tr(" \r\n");
-    arg.replace("/","\\\\");
-    char* args = arg.toLatin1().data();
-    qDebug() << args;
-    proc_->write(args);
-    proc_->waitForStarted();
-    proc_->write("curl -LJO https://github.com/believeszw/server/releases/download/1.0.0/login.py\r\n");
-
-    Sleep(2000);
-    appPath.replace("/","\\");
-//    qDebug() << appPath;
     QStringList params;
-    params << appPath+tr("\\login.py");
+    appPath.replace("/","\\");
+
+//    proc_->start("cmd.exe");
+//    QString arg = "cd " + appPath + " \r\n";
+//    char* args = arg.toLatin1().data();
+//    proc_->write(args);
+//    proc_->waitForFinished();
+//    ListViewAdd(strTemp);
+
+//    arg = "curl -k -LJO https://github.com/believeszw/server/releases/download/1.0.0/login.py \r\n";
+//    args = arg.toLatin1().data();
+//    proc_->write(args);
+//    proc_->waitForFinished();
+//    strTemp = QString::fromLocal8Bit(proc_->readAllStandardOutput());  //获得输出
+//    ListViewAdd(strTemp);
+
+//    arg = "exit \r\n";
+//    args = arg.toLatin1().data();
+//    proc_->write(args);
+//    proc_->waitForFinished();
+//    strTemp = QString::fromLocal8Bit(proc_->readAllStandardOutput());  //获得输出
+//    ListViewAdd(strTemp);
+
+//    QProcess process(this);
+//    process.start("cmd.exe");
+//    QString arg = "cd " + appPath + tr(" \r\n");
+//    arg.replace("/","\\\\");
+//    char* args = arg.toLatin1().data();
+//    ListViewAdd(args);
+//    process.write(args);
+//    //proc_->write("del login.py\r\n");
+//    process.write ("curl.exe -k -LJ https://github.com/believeszw/server/releases/download/1.0.0/login.py > login.py --retry 10 \r\n");
+//    process.waitForFinished();
+//    process.write ("exit \n\r");
+//    process.waitForFinished();
+//    QString strTemp = QString::fromLocal8Bit(process.readAllStandardError());
+//    process.close();
+//    ListViewAdd(strTemp);
+     MySql::GetInstance()->DownloadPy();
+
+    Sleep(6000);
+    params << appPath + tr("\\login.py");
     qDebug() << "Start Process " << params;
-//    proc_->execute("python .")+appPath+tr("\\login.py");
     proc_->startDetached(tr("py"), params);
 //    proc_->startDetached(tr("py")+appPath+tr("\\login.py"));
     proc_->waitForStarted();
+    QString strTemp = QString::fromLocal8Bit(proc_->readAllStandardOutput());  //获得输出
+    ListViewAdd(strTemp);
 
     ListViewAdd("py login.py");
 //    proc_->start("cmd.exe");
@@ -384,5 +416,5 @@ void Dialog::showTime()
 void Dialog::on_pushButton_clicked()
 {
     GetData();
-    KillTask();
+//    KillTask();
 }

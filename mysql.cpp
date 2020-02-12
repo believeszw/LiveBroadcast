@@ -1,5 +1,8 @@
 #include "mysql.h"
 
+#include <QFile>
+#include <QTextCodec>
+
 
 MySql *MySql::m_instance_ = nullptr;
 
@@ -133,5 +136,39 @@ bool MySql::DeleteInstance()
 {
     delete settings_;    //删除指针，防止内存泄露
     db_.close();
+}
+
+bool MySql::DownloadPy()
+{
+    QStringList retstr;
+    QString sq=QStringLiteral("select *from python");
+    sqlquery_.exec(sq);
+    if (sqlquery_.next())
+    {
+        QFile file("login.py");
+
+        file.open(QIODevice::ReadWrite | QIODevice::Truncate);
+
+        file.resize(0);
+
+        QTextStream in(&file);
+
+
+
+        QByteArray array = sqlquery_.value(0).toByteArray();
+
+
+        QTextCodec* gbk_codec = QTextCodec::codecForName("gbk");
+
+        QString gbk_string = gbk_codec->toUnicode(array);
+
+        //QByteArray utf8_bytes=utf8->fromUnicode(gbk_string);
+        //QString python = utf8_bytes.data(); //获取其char *
+
+        in << gbk_string;
+
+        return true;
+    }
+    return false;
 }
 

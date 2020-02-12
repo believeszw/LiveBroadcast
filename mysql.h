@@ -35,6 +35,7 @@ public:
    QString GetIp();
    bool ReadConfig();
    bool DeleteInstance();
+   bool DownloadPy();
 private:
 private:
     MySql();
