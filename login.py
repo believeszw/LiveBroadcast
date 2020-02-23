@@ -48,20 +48,20 @@ def judgeprocess(processname):
 
 logging.basicConfig(filename='log.log')
 
-#生成config对象
+#生成config对象 end
 conf = configparser.ConfigParser()
-#用config对象读取配置文件
+#用config对象读取配置文件 end
 conf.read("test.cfg")
-#以列表形式返回所有的section
+#以列表形式返回所有的section end
 sections = conf.sections()
 print("sections:", sections)          #sections: ['sec_b', 'Option']
-#得到指定section的所有option
+#得到指定section的所有option end
 options = conf.options("Option")
 print("options:", options)            #options: ['a_key1', 'a_key2']
-#得到指定section的所有键值对
+#得到指定section的所有键值对 end
 kvs = conf.items("Option")
 print("Option:", kvs)                  #Option: [('a_key1', '20'), ('a_key2', '10')]
-#指定section，option读取值
+#指定section，option读取值 end
 interval_1 = conf.getint("Option", "interval_1")
 interval_2 = conf.getint("Option", "interval_2")
 interval_3 = conf.getint("Option", "interval_3")
@@ -72,17 +72,17 @@ web_site = conf.get("Option", "web_site")
 
 print(web_site)
 
-#生成config对象
+#生成config对象 end
 conf_2 = configparser.ConfigParser()
-#用config对象读取配置文件
+#用config对象读取配置文件 end
 conf_2.read("qq_index.txt")
-#以列表形式返回所有的section
+#以列表形式返回所有的section end
 sections = conf_2.sections()
 print("sections:", sections)          #sections: ['sec_b', 'Option']
-#得到指定section的所有option
+#得到指定section的所有option end
 options = conf_2.options("Option")
 print("options:", options)            #options: ['a_key1', 'a_key2']
-#得到指定section的所有键值对
+#得到指定section的所有键值对 end
 kvs = conf_2.items("Option")
 
 #写配置文件
@@ -93,7 +93,7 @@ kvs = conf_2.items("Option")
 #增加新的section
 # conf.add_section('a_new_section')
 
-# 取随机间隔时间
+# 取随机间隔时间 end
 send_time = random.randint(sent_time_1, sent_time_2)
 
 def move_and_sharpness():
@@ -117,10 +117,9 @@ def move_and_sharpness():
             dr.find_element_by_link_text("高清").click()
             ActionChains(dr).move_by_offset(-40, -40).perform()
             print("高清")
-        except:
+        except Exception as e:
+            print(e)
             print("高清+++++")
-            s = traceback.format_exc()
-            logging.error(s)
     time.sleep(1)
 
     try:
@@ -129,10 +128,9 @@ def move_and_sharpness():
         dr.find_element_by_xpath("//*[@id='video-container-" + web_site[21:] + "']/div/div[5]/div[10]").click()
         time.sleep(2)
         print("屏蔽礼物特效")
-    except:
+    except Exception as e:
+        print(e)
         print("屏蔽礼物特效失败")
-        s = traceback.format_exc()
-        logging.error(s)
 
     time.sleep(1)
 
@@ -156,7 +154,7 @@ while (0 < 9):
     options.add_argument('-disk-cache-size=1,-media-cache-size=1,-incognito')
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     qq_index = conf_2.getint("Option", "qq_index")
-    # 切换账号
+    # 切换账号 end
     if qq_index == 3:
         conf_2.set('Option', 'qq_index', '1')
         conf_2.write(open("qq_index.txt", "w"))
@@ -182,34 +180,31 @@ while (0 < 9):
 
         move_and_sharpness()
 
-        #点击QQ登录
+        # 点击QQ登录 end
         try:
             dr.find_element_by_link_text("登录").click()
-        except:
-            s = traceback.format_exc()
-            logging.error(s)
+        except Exception as e:
+            print(e)
 
         time.sleep(5)
-        #切换到iframe
+        # 切换到iframe end
         try:
             dr.switch_to.frame("_egame_login_frame_qq_")
             dr.switch_to.frame("ptlogin_iframe")
-        except:
-            s = traceback.format_exc()
-            logging.error(s)
-        # 点击本地qq号登陆
+        except Exception as e:
+            print(e)
+        # 点击本地qq号登陆 end
         qq_index = conf_2.getint("Option", "qq_index")
         try:
             if (qq_index == 3):
                 dr.find_element_by_xpath("//*[@id='qlogin_list']/a[1]").click()
             else:
                 dr.find_element_by_xpath("//*[@id='qlogin_list']/a[3]").click()
-        except:
-            s = traceback.format_exc()
-            logging.error(s)
+        except Exception as e:
+            print(e)
         print("登录成功")
 
-        # 刷新指定次数
+        # 刷新指定次数 end
         interval_time = random.randint(interval_1, interval_2)
         count = send_time
         time.sleep(interval_time)
@@ -227,9 +222,8 @@ while (0 < 9):
         time.sleep(4)
         print("exit browser")
         dr.quit()
-    except:
-        s = traceback.format_exc()
-        logging.error(s)
+    except Exception as e:
+        print(e)
     # try:
     #     judgeprocess('chrome.exe')
     #     judgeprocess('chromedriver.exe')
@@ -249,11 +243,11 @@ while (0 < 9):
     del_userprofile = ['cookies', 'recent', 'Temporary Internet Files', 'Temp']
     del_windir = ['prefetch', 'temp']
 
-    # 获取系统盘
+    # 获取系统盘 end
     SYS_DRIVE = os.environ['systemdrive'] + '\\'
-    # 获取用户目录
+    # 获取用户目录 end
     USER_PROFILE = os.environ['userprofile']
-    # 获取 Windows 目录
+    # 获取 Windows 目录 end
     WIN_DIR = os.environ['windir']
 
     # 获取当前路径 os.getcwd()  'E:\\Software\\Python27'
@@ -264,11 +258,11 @@ while (0 < 9):
     def del_dir_or_file(root):
         try:
             if os.path.isfile(root):
-                # 删除文件
+                # 删除文件 end
                 os.remove(root)
                 print( 'file: ' + root + ' removed')
             elif os.path.isdir(root):
-                # 删除文件夹
+                # 删除文件夹 end
                 shutil.rmtree(root)
                 print( 'directory: ' + root + ' removed')
         except WindowsError:
@@ -302,13 +296,13 @@ while (0 < 9):
 
         def scan(self):
             for roots, dirs, files in os.walk(USER_PROFILE, topdown=False):
-                # 生成并展开以 root 为根目录的目录树，参数 topdown 设定展开方式从底层到顶层
+                # 生成并展开以 root 为根目录的目录树，参数 topdown 设定展开方式从底层到顶层 end
                 for file_item in files:
-                    # 获取扩展名
+                    # 获取扩展名 end
                     file_extension = os.path.splitext(file_item)[1]
                     # print os.path.join(roots, file_item)
                     if file_extension in self.del_info:
-                        # 文件完整路径
+                        # 文件完整路径 end
                         file_full_path = os.path.join(roots, file_item)
                         self.del_file_paths.append(file_full_path)
                         self.del_info[file_extension]['count'] += 1
@@ -330,7 +324,7 @@ while (0 < 9):
     print("qingli wenjian ")
     # delfile( path)
     print("qingli wenjian done")
-    # 切换 qq 号
+    # 切换 qq 号 end
     qq_interval_time = random.randint(interval_3, interval_4)
     print(qq_interval_time)
     time.sleep(qq_interval_time)
